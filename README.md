@@ -63,7 +63,7 @@ Incluye un servidor Node.js ultraligero **sin dependencias externas** que activa
 # Iniciar el servidor local
 npm start
 # O directamente:
-node server.js
+node local-server.js
 ```
 Abre tu navegador en:
 👉 **`http://localhost:3000`**

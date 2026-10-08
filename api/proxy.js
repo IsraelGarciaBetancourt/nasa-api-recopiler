@@ -1,7 +1,7 @@
 // Función Serverless para Vercel (Proxy CORS)
 // Permite que la app desplegada en Vercel consulte cualquier API de la NASA sin bloqueos de CORS
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Configurar cabeceras CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -19,6 +19,11 @@ export default async function handler(req, res) {
 
   try {
     const targetUrl = decodeURIComponent(url);
+    const parsed = new URL(targetUrl);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return res.status(400).json({ error: 'Solo se permiten URLs http y https' });
+    }
+
     const response = await fetch(targetUrl, {
       headers: {
         'User-Agent': 'NASA-API-Recopiler-Vercel/1.0',
@@ -37,4 +42,5 @@ export default async function handler(req, res) {
       details: error.message
     });
   }
-}
+};
+

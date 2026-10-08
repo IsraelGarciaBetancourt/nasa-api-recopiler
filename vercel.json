@@ -1,6 +1,8 @@
 {
-  "version": 2,
-  "name": "nasa-api-recopiler",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": ".",
   "cleanUrls": true,
   "headers": [
     {
