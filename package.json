@@ -1,0 +1,13 @@
+{
+  "name": "nasa-api-recopiler",
+  "version": "1.0.0",
+  "description": "Explorador y recopilador interactivo de APIs de la NASA para proyectos y hackathons",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["nasa", "space-apps", "api", "explorer", "collector"],
+  "author": "Israel Garcia",
+  "license": "MIT"
+}

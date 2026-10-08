@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NASA API Recopiler & Explorer | Dossier de APIs para Hackathon</title>
+  <meta name="description" content="Herramienta para probar, analizar y recopilar APIs de la NASA con evaluación de viabilidad, notas de equipo y exportación de dossier para proyectos espaciales.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Ambient Space Background Glows -->
+  <div class="cosmos-bg">
+    <div class="nebula nebula-1"></div>
+    <div class="nebula nebula-2"></div>
+    <div class="stars-layer"></div>
+  </div>
+
+  <div class="app-layout">
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+      <div class="brand-zone">
+        <div class="logo-orb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" stroke="#38BDF8"/>
+            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#818CF8"/>
+            <circle cx="12" cy="12" r="3" fill="#38BDF8" fill-opacity="0.3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            <span>NASA</span> API Recopiler
+            <span class="badge-tag">Space Apps Edition</span>
+          </div>
+          <p class="brand-subtitle">Laboratorio de Pruebas & Dossier de APIs para el Reto Espacial</p>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Counters -->
+      <div class="header-metrics">
+        <div class="metric-pill" id="metric-selected" title="APIs seleccionadas como viables para el proyecto">
+          <span class="metric-icon">⭐</span>
+          <span class="metric-val" id="cnt-selected">0</span>
+          <span class="metric-lbl">Para Proyecto</span>
+        </div>
+        <div class="metric-pill" id="metric-evaluating" title="APIs en evaluación">
+          <span class="metric-icon">🤔</span>
+          <span class="metric-val" id="cnt-evaluating">0</span>
+          <span class="metric-lbl">Evaluando</span>
+        </div>
+        <div class="metric-pill" id="metric-total" title="Total de APIs documentadas">
+          <span class="metric-icon">📁</span>
+          <span class="metric-val" id="cnt-total">0</span>
+          <span class="metric-lbl">Guardadas</span>
+        </div>
+      </div>
+
+      <!-- Global NASA Key & Action Tools -->
+      <div class="header-tools">
+        <div class="key-input-box" title="API Key de api.nasa.gov. Por defecto usa DEMO_KEY">
+          <span class="key-icon">🔑</span>
+          <input type="text" id="global-api-key" placeholder="NASA API Key (o DEMO_KEY)" value="DEMO_KEY" autocomplete="off" spellcheck="false">
+          <button class="btn-ghost-sm" id="btn-save-key" title="Guardar clave">Guardar</button>
+        </div>
+        
+        <button class="btn-glow-outline" id="btn-open-export">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Exportar Dossier
+        </button>
+
+        <button class="btn-ghost-icon" id="btn-open-import" title="Importar colección JSON">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="app-main">
+      <!-- Left Sidebar: Explorer & Saved Directory -->
+      <aside class="sidebar-panel">
+        <div class="sidebar-tabs">
+          <button class="sidebar-tab active" data-tab="catalog" id="tab-btn-catalog">
+            <span>🪐 Catálogo NASA</span>
+          </button>
+          <button class="sidebar-tab" data-tab="saved" id="tab-btn-saved">
+            <span>⭐ Guardadas (<span id="sidebar-saved-count">0</span>)</span>
+          </button>
+          <button class="sidebar-tab" data-tab="history" id="tab-btn-history">
+            <span>🕒 Historial</span>
+          </button>
+        </div>
+
+        <div class="sidebar-search-box">
+          <input type="text" id="sidebar-filter-input" placeholder="Buscar por nombre, categoría o URL...">
+        </div>
+
+        <!-- Catalog Tab Content -->
+        <div class="sidebar-tab-content active" id="content-catalog">
+          <div class="preset-filter-pills" id="preset-categories-filter">
+            <button class="category-pill active" data-category="all">Todas</button>
+            <button class="category-pill" data-category="🔭 Astronomía e Imágenes">🔭 Astronomía</button>
+            <button class="category-pill" data-category="☄️ Asteroides y Objetos Cercanos">☄️ Asteroides</button>
+            <button class="category-pill" data-category="🪐 Exploración Planetaria">🪐 Planetas</button>
+            <button class="category-pill" data-category="🌍 Monitoreo de la Tierra">🌍 Tierra</button>
+            <button class="category-pill" data-category="☀️ Clima Espacial y Sol">☀️ Clima Solar</button>
+          </div>
+          <div class="presets-list" id="presets-container">
+            <!-- Dynamically populated from NASA_PRESETS -->
+          </div>
+        </div>
+
+        <!-- Saved Dossier Tab Content -->
+        <div class="sidebar-tab-content" id="content-saved">
+          <div class="saved-filter-bar">
+            <select id="saved-status-filter" class="form-select-sm">
+              <option value="all">Todos los estados</option>
+              <option value="selected">⭐ Para Proyecto</option>
+              <option value="evaluating">🤔 En Evaluación</option>
+              <option value="backup">💡 Idea Secundaria</option>
+              <option value="discarded">❌ Descartadas</option>
+            </select>
+          </div>
+          <div class="saved-list" id="saved-container">
+            <!-- Dynamically populated with saved APIs -->
+          </div>
+        </div>
+
+        <!-- History Tab Content -->
+        <div class="sidebar-tab-content" id="content-history">
+          <div class="history-actions">
+            <span class="muted-text text-xs">Últimos GET ejecutados</span>
+            <button class="text-btn-danger" id="btn-clear-history">Limpiar</button>
+          </div>
+          <div class="history-list" id="history-container">
+            <!-- Dynamically populated with recent queries -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center & Right Workspace -->
+      <section class="workspace-panel">
+        
+        <!-- SECTION 1: REQUEST RUNNER -->
+        <div class="glass-card request-builder-card">
+          <div class="card-header-flex">
+            <div class="section-badge">
+              <span class="pulsing-dot"></span>
+              <span>1. Configurar y Ejecutar Consulta GET</span>
+            </div>
+            <div class="request-options">
+              <label class="toggle-switch-label" title="Si la API tiene restricciones CORS en el navegador, activa este proxy automático">
+                <input type="checkbox" id="cors-proxy-toggle">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Proxy CORS Fallback</span>
+              </label>
+              <button class="btn-ghost-sm" id="btn-reset-request">Limpiar</button>
+            </div>
+          </div>
+
+          <!-- URL Input Bar -->
+          <div class="url-bar-container">
+            <span class="method-badge get">GET</span>
+            <input type="url" id="request-url-input" class="url-input" placeholder="https://api.nasa.gov/planetary/apod" spellcheck="false" autocomplete="off">
+            <button class="btn-primary-send" id="btn-send-request" title="Enviar petición GET (Ctrl+Enter)">
+              <span class="btn-text">Consultar API</span>
+              <svg class="send-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </div>
+
+          <!-- Query Parameters Table -->
+          <div class="params-section">
+            <div class="params-header">
+              <span class="params-title">Parámetros de Consulta (Query Params)</span>
+              <div class="params-actions">
+                <button class="btn-ghost-sm" id="btn-add-param">+ Agregar Parámetro</button>
+                <button class="btn-ghost-sm" id="btn-inject-api-key">🔑 Inyectar api_key</button>
+              </div>
+            </div>
+            
+            <div class="params-table-wrapper">
+              <table class="params-table" id="params-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;">Uso</th>
+                    <th style="width: 200px;">Clave (Key)</th>
+                    <th>Valor (Value)</th>
+                    <th style="width: 220px;">Descripción / Nota</th>
+                    <th style="width: 40px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="params-table-body">
+                  <!-- Generated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: PROJECT EVALUATION & TEAM DOCUMENTATION -->
+        <div class="glass-card evaluation-card">
+          <div class="card-header-flex">
+            <div class="section-badge evaluation-badge">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              <span>2. Evaluación y Documentación para el Proyecto (Hackathon)</span>
+            </div>
+            <div class="card-header-actions">
+              <button class="btn-success-save" id="btn-save-evaluation">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                <span>Guardar en el Dossier</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="eval-grid">
+            <!-- Row 1: Nombre, Decisión y Viabilidad -->
+            <div class="form-group col-span-2">
+              <label for="eval-name">Nombre descriptivo de la API / Endpoint:</label>
+              <input type="text" id="eval-name" class="form-input" placeholder="Ej: APOD - Foto Astronómica del Día">
+            </div>
+
+            <div class="form-group">
+              <label for="eval-decision">¿Nos sirve para el proyecto?</label>
+              <select id="eval-decision" class="form-select">
+                <option value="selected">⭐ SÍ, Seleccionada para el proyecto</option>
+                <option value="evaluating">🤔 En evaluación / Dudosa</option>
+                <option value="backup">💡 Idea secundaria / Plan B</option>
+                <option value="discarded">❌ Descartada (No viable)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Nivel de Utilidad / Viabilidad:</label>
+              <div class="star-rating" id="eval-stars">
+                <button type="button" class="star-btn" data-value="1">★</button>
+                <button type="button" class="star-btn" data-value="2">★</button>
+                <button type="button" class="star-btn" data-value="3">★</button>
+                <button type="button" class="star-btn" data-value="4">★</button>
+                <button type="button" class="star-btn active" data-value="5">★</button>
+              </div>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="eval-challenge">Categoría / Reto de la NASA al que aplica:</label>
+              <input type="text" id="eval-challenge" class="form-input" placeholder="Ej: Reto de Monitoreo de Asteroides / Cambio Climático / Divulgación 3D">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="eval-key-data">Datos clave que nos entrega (Campos útiles del JSON):</label>
+              <input type="text" id="eval-key-data" class="form-input" placeholder="Ej: title, explanation, hdurl, date, media_type">
+            </div>
+
+            <!-- Row 2: Notas y Caso de Uso del Equipo -->
+            <div class="form-group col-span-4">
+              <label for="eval-notes">
+                <span>Notas del Equipo & Caso de Uso:</span>
+                <span class="muted-note">(¿Para qué nos servirá exactamente? ¿Cómo lo integraremos? ¿Qué valor aporta a la solución?)</span>
+              </label>
+              <textarea id="eval-notes" class="form-textarea" rows="3" placeholder="Ej: Esta API nos servirá para la pantalla de bienvenida y el carrusel interactivo. Los datos de 'explanation' los usaremos para alimentar el asistente de voz..."></textarea>
+            </div>
+
+            <!-- Row 3: Limitaciones / Cuidados -->
+            <div class="form-group col-span-4">
+              <label for="eval-risks">
+                <span>Limitaciones, Rate Limits o Cuidados a tener en cuenta:</span>
+              </label>
+              <input type="text" id="eval-risks" class="form-input" placeholder="Ej: Rate limit de 1000 req/hora con API Key real; no saturar en el frontend sin caché; fecha límite de 7 días.">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: RESPONSE INSPECTOR & CODE GENERATOR -->
+        <div class="glass-card response-card">
+          <div class="response-header">
+            <div class="section-badge response-badge">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+              <span>3. Respuesta del Servidor (Output de la API)</span>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="response-stats" id="response-stats" style="display: none;">
+              <span class="stat-pill" id="stat-status">
+                <span class="status-indicator"></span>
+                <span id="stat-status-code">200 OK</span>
+              </span>
+              <span class="stat-pill" id="stat-time">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span id="stat-time-val">0 ms</span>
+              </span>
+              <span class="stat-pill" id="stat-size">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                <span id="stat-size-val">0 KB</span>
+              </span>
+            </div>
+
+            <!-- Response View Tabs -->
+            <div class="response-tabs">
+              <button class="resp-tab-btn active" data-tab="json">
+                <span>🌲 JSON Visor</span>
+              </button>
+              <button class="resp-tab-btn" data-tab="media" id="tab-btn-media">
+                <span>🖼️ Media (<span id="media-count">0</span>)</span>
+              </button>
+              <button class="resp-tab-btn" data-tab="schema">
+                <span>📊 Campos / Schema</span>
+              </button>
+              <button class="resp-tab-btn" data-tab="code">
+                <span>💻 Código de Integración</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Response Body Views -->
+          <div class="response-body-wrapper">
+            
+            <!-- Default / Empty State -->
+            <div class="empty-response-state" id="empty-response-state">
+              <div class="empty-icon-radar">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="1.5">
+                  <path d="M12 2a10 10 0 0 0-7.07 17.07l2.83-2.83A6 6 0 1 1 18 12h4a10 10 0 0 0-10-10z"></path>
+                  <circle cx="12" cy="12" r="2"></circle>
+                </svg>
+              </div>
+              <h3>Listo para consultar APIs de la NASA</h3>
+              <p>Selecciona una API preconfigurada del catálogo a la izquierda o escribe una URL y presiona <strong>"Consultar API"</strong>.</p>
+              <div class="quick-hints">
+                <span>💡 Tip: Usa <code>DEMO_KEY</code> o registra una gratis en <a href="https://api.nasa.gov" target="_blank" rel="noopener">api.nasa.gov</a> para 1000 consultas/hora.</span>
+              </div>
+            </div>
+
+            <!-- Loading Spinner State -->
+            <div class="loading-response-state" id="loading-response-state" style="display: none;">
+              <div class="cosmic-spinner"></div>
+              <p>Conectando con los servidores de la NASA...</p>
+              <span class="loading-subtext">Descargando telemetría y datos orbitales</span>
+            </div>
+
+            <!-- Error Banner -->
+            <div class="error-banner" id="error-banner" style="display: none;">
+              <div class="error-icon">⚠️</div>
+              <div class="error-content">
+                <div class="error-title" id="error-title">Error en la petición</div>
+                <div class="error-desc" id="error-desc">Detalle del error</div>
+              </div>
+              <button class="btn-ghost-sm" id="btn-retry-proxy">Reintentar con Proxy</button>
+            </div>
+
+            <!-- TAB 1: JSON VISOR -->
+            <div class="resp-view-content active" id="view-json">
+              <div class="json-toolbar" id="json-toolbar" style="display: none;">
+                <div class="json-search">
+                  <input type="text" id="json-search-input" placeholder="Buscar propiedad o valor...">
+                </div>
+                <div class="json-actions">
+                  <button class="btn-ghost-sm" id="btn-expand-all">Expandir todo</button>
+                  <button class="btn-ghost-sm" id="btn-collapse-all">Colapsar</button>
+                  <button class="btn-ghost-sm" id="btn-copy-json">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    Copiar JSON
+                  </button>
+                  <button class="btn-ghost-sm" id="btn-download-json">Descargar .json</button>
+                </div>
+              </div>
+              <pre class="json-output" id="json-output-container"></pre>
+            </div>
+
+            <!-- TAB 2: MEDIA PREVIEW -->
+            <div class="resp-view-content" id="view-media">
+              <div class="media-preview-header">
+                <span class="muted-text">Imágenes y multimedia detectadas automáticamente en la respuesta de la NASA:</span>
+              </div>
+              <div class="media-gallery" id="media-gallery-container">
+                <!-- Dynamically populated images -->
+              </div>
+            </div>
+
+            <!-- TAB 3: DATA SCHEMA / FIELDS -->
+            <div class="resp-view-content" id="view-schema">
+              <div class="schema-info-bar">
+                <span>Campos extraídos para facilitar la programación de tu solución:</span>
+              </div>
+              <table class="schema-table">
+                <thead>
+                  <tr>
+                    <th>Campo / Propiedad</th>
+                    <th>Tipo</th>
+                    <th>Valor de Ejemplo</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="schema-table-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- TAB 4: CODE INTEGRATION SNIPPETS -->
+            <div class="resp-view-content" id="view-code">
+              <div class="code-snippets-header">
+                <div class="snippet-lang-selector">
+                  <button class="lang-pill active" data-lang="js">JavaScript (fetch)</button>
+                  <button class="lang-pill" data-lang="python">Python (requests)</button>
+                  <button class="lang-pill" data-lang="curl">cURL (Terminal)</button>
+                </div>
+                <button class="btn-ghost-sm" id="btn-copy-code">Copiar Código</button>
+              </div>
+              <pre class="code-snippet-box"><code id="code-snippet-content">// Selecciona o ejecuta una consulta para generar el código</code></pre>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL: EXPORT DOSSIER -->
+  <div class="modal-backdrop" id="modal-export" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title-flex">
+          <span class="modal-icon">📑</span>
+          <h3>Exportar Dossier de APIs para el Proyecto</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-export">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Descarga o copia la documentación de las APIs seleccionadas para incluir en la postulación de tu reto, presentación ante el jurado o README del repositorio.
+        </p>
+
+        <div class="export-options-grid">
+          <div class="export-card" id="card-export-md">
+            <div class="export-card-icon">📝</div>
+            <h4>Reporte en Markdown</h4>
+            <p>Formato listo para el <code>README.md</code> de GitHub o documento de entrega de la NASA con tablas, justificaciones y URLs.</p>
+            <div class="export-btns-row">
+              <button class="btn-primary-sm" id="btn-dl-md">Descargar .md</button>
+              <button class="btn-ghost-sm" id="btn-copy-md">Copiar al portapapeles</button>
+            </div>
+          </div>
+
+          <div class="export-card" id="card-export-json">
+            <div class="export-card-icon">📦</div>
+            <h4>Colección JSON Completa</h4>
+            <p>Copia de seguridad con todas tus APIs guardadas, notas y respuestas para compartir con tu equipo.</p>
+            <div class="export-btns-row">
+              <button class="btn-primary-sm" id="btn-dl-json">Descargar .json</button>
+            </div>
+          </div>
+
+          <div class="export-card" id="card-export-csv">
+            <div class="export-card-icon">📊</div>
+            <h4>Matriz CSV / Excel</h4>
+            <p>Para abrir en Google Sheets, Excel o Notion con columnas de viabilidad, reto y notas.</p>
+            <div class="export-btns-row">
+              <button class="btn-primary-sm" id="btn-dl-csv">Descargar .csv</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="export-preview-zone">
+          <label>Vista previa del Reporte Markdown:</label>
+          <pre class="export-preview-box" id="export-preview-box"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: IMPORT JSON -->
+  <div class="modal-backdrop" id="modal-import" style="display: none;">
+    <div class="modal-box modal-box-sm">
+      <div class="modal-header">
+        <div class="modal-title-flex">
+          <span class="modal-icon">📥</span>
+          <h3>Importar Colección de APIs</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-import">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Carga un archivo JSON previamente exportado para recuperar o combinar tu dossier de APIs de la NASA.</p>
+        <div class="file-drop-area" id="file-drop-area">
+          <input type="file" id="import-file-input" accept=".json">
+          <span class="drop-text">Arrastra tu archivo <code>.json</code> aquí o haz clic para seleccionarlo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Box -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="nasa-presets.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
